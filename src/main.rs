@@ -29,7 +29,3 @@ fn execute_program(equation: String) {
     println!("{}", equation);
 }
 
-// 1) lexing / parsing equation
-// 2) simplify
-// 3) compute
-// 4) display
