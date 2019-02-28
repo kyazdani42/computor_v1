@@ -1,31 +1,38 @@
 use std::env;
 use std::io;
 
+const USAGE: &str = "usage: computor_v1 | computor_v1 -c \"equation\"";
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let no_args: bool = args.len() == 1;
-    let args_not_correct: bool = args.len() != 3 || args[1].trim() != "-c";
-    if no_args {
-        loop {
-            println!("Enter the equation: ");
-            let mut equation = String::new();
-            io::stdin().read_line(&mut equation).expect("error: reading stdin failed");
-            execute_program(equation);
-        }
-    } else if args_not_correct {
-        let usage = "usage: computor_v1 | computor_v1 -c \"equation\"";
-        print_error(&usage);
-    } else {
-        let equation: String = args[2].clone();
-        execute_program(equation);
+    match args.len() {
+        1 => loop_execution(),
+        2 => execute_program(args[1].trim()),
+        _ => display_usage(USAGE),
     }
 }
 
-fn print_error(error: &str) {
+fn loop_execution() {
+    loop {
+        println!("Enter an equation: ");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("error: reading stdin failed");
+
+        let equation = input.trim();
+        match equation {
+            "quit" => break,
+            _ => execute_program(equation),
+        }
+    }
+}
+
+fn display_usage(error: &str) {
     println!("{}", error);
 }
 
-fn execute_program(equation: String) {
+fn execute_program(equation: &str) {
     println!("{}", equation);
 }
-
