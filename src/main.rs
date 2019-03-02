@@ -9,6 +9,6 @@ fn main() {
     args.next();
     match args.next() {
         Some(v) => app::run(v),
-        None => app::run_loop()
+        None => app::run_loop(),
     }
 }

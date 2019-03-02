@@ -71,7 +71,7 @@ impl OperationIterationResult {
         OperationIterationResult {
             index: 0,
             value: String::new(),
-            operator: Sign::Pos
+            operator: Sign::Pos,
         }
     }
 }
@@ -82,7 +82,7 @@ fn get_operation_from_iterator(iterator: Bytes) -> Option<OperationIterationResu
         match byte {
             b'0'...b'9' | b'x' | b'^' | b'*' => {
                 return_value.value.push(byte as char);
-            },
+            }
             b'-' | b'+' => {
                 if return_value.index > 0 {
                     break;
@@ -90,7 +90,7 @@ fn get_operation_from_iterator(iterator: Bytes) -> Option<OperationIterationResu
                 if byte == b'-' {
                     return_value.operator = Sign::Neg;
                 }
-            },
+            }
             _ => return None,
         };
         return_value.index += 1;
@@ -101,7 +101,7 @@ fn get_operation_from_iterator(iterator: Bytes) -> Option<OperationIterationResu
 #[derive(Debug, PartialEq)]
 enum Sign {
     Pos,
-    Neg    
+    Neg,
 }
 
 fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operation> {
@@ -113,7 +113,7 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
     let value;
     if wrapped_num.is_err() {
         return None;
-    }  else {
+    } else {
         value = wrapped_num.unwrap();
     };
     let splitted_by_pow: Vec<&str> = splitted_by_mult.last()?.split('^').collect();
@@ -129,7 +129,7 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
     };
     let is_neg = match sign {
         Sign::Neg => true,
-        Sign::Pos => false
+        Sign::Pos => false,
     };
     Some(Operation::new(is_neg, value, pow))
 }
@@ -167,7 +167,7 @@ mod tests {
         let expected = OperationIterationResult {
             index: 6,
             operator: Sign::Pos,
-            value: "14*x^1".to_owned()
+            value: "14*x^1".to_owned(),
         };
         let result = get_operation_from_iterator(test_value).unwrap();
         assert_eq!(result, expected)
@@ -179,7 +179,7 @@ mod tests {
         let expected = OperationIterationResult {
             index: 7,
             operator: Sign::Neg,
-            value: "14*x^1".to_owned()
+            value: "14*x^1".to_owned(),
         };
         let result = get_operation_from_iterator(test_value).unwrap();
         assert_eq!(result, expected)

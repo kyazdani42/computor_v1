@@ -25,7 +25,7 @@ pub fn run(equation: String) {
         Ok(val) => val,
         Err(err) => {
             eprintln!("{}", err);
-            return ;
+            return;
         }
     };
     println!("at the end: {}", parsed_value);
