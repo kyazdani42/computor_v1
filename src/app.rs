@@ -1,6 +1,7 @@
 use std::io;
 
 use parse;
+use compute;
 
 pub fn run_loop() {
     loop {
@@ -20,16 +21,23 @@ pub fn run_loop() {
     }
 }
 
-pub fn run(equation: String) {
-    let parsed_value = match parse::parse(equation) {
+pub fn run(input: String) {
+    let equation = match parse::parse(input) {
         Ok(val) => val,
         Err(err) => {
             eprintln!("{}", err);
             return;
         }
     };
-    println!("at the end: {}", parsed_value);
-    // simplify
+    println!("equation: {}", equation);
+    let simplified_equation = match compute::simplify(equation) {
+        Ok(val) => val,
+        Err(err) => {
+            eprintln!("{}", err);
+            return;
+        }
+    };
+    println!("simplified: {}", simplified_equation);
     // if 2 compute delta
     // else calculate
     // calculat

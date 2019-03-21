@@ -121,12 +121,16 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
         return None;
     };
     let wrapped_pow = splitted_by_pow.last()?.parse::<i16>();
+
     let pow;
     if wrapped_pow.is_err() {
         return None;
     } else {
         pow = wrapped_pow.unwrap();
     };
+    if pow > 2 {
+        return None;
+    }
     let is_neg = match sign {
         Sign::Neg => true,
         Sign::Pos => false,
