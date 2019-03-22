@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt,clone};
 
 pub struct Equation {
     pub l_op: Vec<Operation>,
@@ -13,7 +13,7 @@ impl Equation {
 
 impl fmt::Display for Equation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let l_op = &get_str_from_vec(&self.l_op)[2..];
+        let l_op = get_str_from_vec(&self.l_op);
         let r_op = get_str_from_vec(&self.r_op);
         write!(f, "{}= {}", l_op, r_op)
     }
@@ -34,19 +34,39 @@ impl Operation {
             pow,
         }
     }
+    pub fn clone_invert(&self) -> Operation {
+        Operation {
+            negative: !self.negative,
+            value: self.value,
+            pow: self.pow
+        }
+    }
 }
 
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.pow == 0 && self.value == 0 {
-            return write!(f, "0");
+        if self.pow == 0 {
+            return write!(f, "{}", self.value);
         };
         let sign = if self.negative { "-" } else { "+" };
+        if self.pow == 1 {
+            return write!(f, "{} {} * X", sign, self.value);
+        };
         write!(f, "{} {} * X^{}", sign, self.value, self.pow)
     }
 }
 
-fn get_str_from_vec(vec: &Vec<Operation>) -> String {
+impl clone::Clone for Operation {
+    fn clone(&self) -> Operation {
+        Operation {
+            negative: self.negative,
+            value: self.value,
+            pow: self.pow
+        }
+    }
+}
+
+pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
     let mut s = String::new();
     for op in vec {
         let formatted_operation = format!("{}", op);

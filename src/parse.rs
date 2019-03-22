@@ -8,7 +8,7 @@ pub fn parse(s: String) -> Result<Equation, &'static str> {
 
     let left_op = get_operation_vec(operations[0])?;
     let right_op;
-    if operations[1] == "0" {
+    if operations[1].trim() != "0" {
         right_op = get_operation_vec(operations[1])?;
     } else {
         right_op = vec![Operation::new(false, 0, 0)];

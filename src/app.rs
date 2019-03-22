@@ -2,6 +2,7 @@ use std::io;
 
 use parse;
 use compute;
+use equation;
 
 pub fn run_loop() {
     loop {
@@ -29,16 +30,13 @@ pub fn run(input: String) {
             return;
         }
     };
-    println!("equation: {}", equation);
-    let simplified_equation = match compute::simplify(equation) {
+    let simplified_operation = match compute::simplify(equation) {
         Ok(val) => val,
         Err(err) => {
             eprintln!("{}", err);
             return;
         }
     };
-    println!("simplified: {}", simplified_equation);
-    // if 2 compute delta
-    // else calculate
-    // calculat
+    println!("Reduced form: {}", equation::get_str_from_vec(&simplified_operation));
+    // get equation level and compute
 }
