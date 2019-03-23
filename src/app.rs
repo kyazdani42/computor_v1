@@ -30,13 +30,7 @@ pub fn run(input: String) {
             return;
         }
     };
-    let simplified_operation = match compute::simplify(equation) {
-        Ok(val) => val,
-        Err(err) => {
-            eprintln!("{}", err);
-            return;
-        }
-    };
-    println!("Reduced form: {}", equation::get_str_from_vec(&simplified_operation));
+    let simplified_operation = compute::simplify(equation);
+    println!("Reduced form: {} = 0", equation::get_str_from_vec(&simplified_operation));
     // get equation level and compute
 }

@@ -1,13 +1,12 @@
 use equation::{Equation,Operation};
 
-pub fn simplify(operation: Equation) -> Result<Vec<Operation>, &'static str> {
+pub fn simplify(operation: Equation) -> Vec<Operation> {
   let operation_right = operation.r_op[0].clone_invert();
   let mut operation_left = operation.l_op.clone();
   if operation_right.value != 0 {
     operation_left.push(operation_right);
   }
-  let mut simplified_operation = get_simplified_operation(operation_left);
-  Ok(simplified_operation)
+  get_simplified_operation(operation_left)
 }
 
 fn get_simplified_operation(operation: Vec<Operation>) -> Vec<Operation> {
