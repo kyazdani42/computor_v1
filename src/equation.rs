@@ -1,4 +1,4 @@
-use std::{fmt,clone};
+use std::{clone, fmt};
 
 pub struct Equation {
     pub l_op: Vec<Operation>,
@@ -38,7 +38,7 @@ impl Operation {
         Operation {
             negative: !self.negative,
             value: self.value,
-            pow: self.pow
+            pow: self.pow,
         }
     }
 }
@@ -48,11 +48,10 @@ impl fmt::Display for Operation {
         if self.pow == 0 {
             return write!(f, "{}", self.value);
         };
-        let sign = if self.negative { "-" } else { "+" };
         if self.pow == 1 {
-            return write!(f, "{} {} * X", sign, self.value);
+            return write!(f, "{} * X", self.value);
         };
-        write!(f, "{} {} * X^{}", sign, self.value, self.pow)
+        write!(f, "{} * X^{}", self.value, self.pow)
     }
 }
 
@@ -61,15 +60,22 @@ impl clone::Clone for Operation {
         Operation {
             negative: self.negative,
             value: self.value,
-            pow: self.pow
+            pow: self.pow,
         }
     }
 }
 
 pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
     let mut s = String::new();
-    for op in vec {
-        let formatted_operation = format!("{}", op);
+    for (i, op) in vec.iter().enumerate() {
+        let sign = if op.negative {
+            "-"
+        } else if i > 0 {
+            "+"
+        } else {
+            ""
+        };
+        let formatted_operation = format!("{} {}", sign, op);
         s.push_str(&formatted_operation);
         s.push(' ');
     }

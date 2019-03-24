@@ -1,8 +1,8 @@
 use std::io;
 
-use parse;
 use compute;
 use equation;
+use parse;
 
 pub fn run_loop() {
     loop {
@@ -31,6 +31,9 @@ pub fn run(input: String) {
         }
     };
     let simplified_operation = compute::simplify(equation);
-    println!("Reduced form: {} = 0", equation::get_str_from_vec(&simplified_operation));
-    // get equation level and compute
+    println!(
+        "Reduced form:{}= 0\n{}",
+        equation::get_str_from_vec(&simplified_operation),
+        compute::resolve(&simplified_operation)
+    );
 }

@@ -1,7 +1,7 @@
 mod app;
+mod compute;
 mod equation;
 mod parse;
-mod compute;
 
 use std::env;
 
