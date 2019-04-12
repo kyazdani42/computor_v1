@@ -1,36 +1,31 @@
 use equation::{Equation, Operation};
-
 pub fn simplify(operation: Equation) -> Vec<Operation> {
-    let operation_right = operation.r_op[0].clone_invert();
-    let mut operation_left = operation.l_op.clone();
-    if operation_right.value != 0 {
-        operation_left.push(operation_right);
-    }
-    get_simplified_operation(operation_left)
+    let mut reversed_r_op = operation
+        .r_op
+        .into_iter()
+        .map(|mut v| {
+            v.value = v.value * -1;
+            v
+        })
+        .collect();
+    let mut operation = operation.l_op.clone();
+    operation.append(&mut reversed_r_op);
+    let filtered_op = operation.into_iter().filter(|v| v.value != 0).collect();
+    get_simplified_operation(filtered_op)
 }
 
 fn get_simplified_operation(operation: Vec<Operation>) -> Vec<Operation> {
     let mut simplified_operation: Vec<Operation> = vec![];
-    for v in operation.iter() {
+    for orig in operation.iter() {
         let mut should_push = true;
-        for s in simplified_operation.iter_mut() {
-            if v.pow == s.pow {
+        for new in simplified_operation.iter_mut() {
+            if orig.pow == new.pow {
                 should_push = false;
-                let v_value = if v.negative == true {
-                    v.value * -1
-                } else {
-                    v.value
-                };
-                let s_value = if s.negative == true {
-                    s.value * -1
-                } else {
-                    s.value
-                };
-                s.value = v_value + s_value;
+                new.value = orig.value + new.value;
             };
         }
         if should_push == true {
-            simplified_operation.push(v.clone());
+            simplified_operation.push(orig.clone());
         }
     }
     simplified_operation
@@ -40,9 +35,9 @@ fn get_simplified_operation(operation: Vec<Operation>) -> Vec<Operation> {
 }
 
 pub fn resolve(operation: &Vec<Operation>) -> String {
-    let c = get_value(&operation, 0);
-    let b = get_value(&operation, 1);
-    let a = get_value(&operation, 2);
+    let c = get_operation_value_from_pow(&operation, 0);
+    let b = get_operation_value_from_pow(&operation, 1);
+    let a = get_operation_value_from_pow(&operation, 2);
     if a == 0 {
         linear_operation(b, c)
     } else {
@@ -81,15 +76,9 @@ pub fn quadratic_operation(a: i64, b: i64, c: i64) -> String {
     }
 }
 
-fn get_value(operation: &Vec<Operation>, pow: i16) -> i64 {
+fn get_operation_value_from_pow(operation: &Vec<Operation>, pow: i16) -> i64 {
     match operation.iter().find(|v| v.pow == pow) {
-        Some(v) => {
-            if v.negative == true {
-                v.value * -1
-            } else {
-                v.value
-            }
-        }
+        Some(v) => v.value,
         None => 0,
     }
 }

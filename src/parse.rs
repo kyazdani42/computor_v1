@@ -11,7 +11,7 @@ pub fn parse(s: String) -> Result<Equation, &'static str> {
     if operations[1].trim() != "0" {
         right_op = get_operation_vec(operations[1])?;
     } else {
-        right_op = vec![Operation::new(false, 0, 0)];
+        right_op = vec![Operation::new(0, 0)];
     };
 
     Ok(Equation::new(left_op, right_op))
@@ -110,7 +110,7 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
         return None;
     };
     let wrapped_num = splitted_by_mult.first()?.parse();
-    let value;
+    let value: i64;
     if wrapped_num.is_err() {
         return None;
     } else {
@@ -131,11 +131,11 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
     if pow > 2 {
         return None;
     }
-    let is_neg = match sign {
-        Sign::Neg => true,
-        Sign::Pos => false,
+    let neg = match sign {
+        Sign::Neg => -1,
+        Sign::Pos => 1,
     };
-    Some(Operation::new(is_neg, value, pow))
+    Some(Operation::new(value * neg, pow))
 }
 
 // -------------- TESTS ----------------- //

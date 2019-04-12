@@ -1,4 +1,4 @@
-use std::{clone, fmt};
+use std::fmt;
 
 pub struct Equation {
     pub l_op: Vec<Operation>,
@@ -19,56 +19,39 @@ impl fmt::Display for Equation {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Operation {
-    pub negative: bool,
     pub value: i64,
     pub pow: i16,
 }
 
 impl Operation {
-    pub fn new(negative: bool, value: i64, pow: i16) -> Operation {
-        Operation {
-            negative,
-            value,
-            pow,
-        }
-    }
-    pub fn clone_invert(&self) -> Operation {
-        Operation {
-            negative: !self.negative,
-            value: self.value,
-            pow: self.pow,
-        }
+    pub fn new(value: i64, pow: i16) -> Operation {
+        Operation { value, pow }
     }
 }
 
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let display_value = if self.value < 0 {
+            self.value * -1
+        } else {
+            self.value
+        };
         if self.pow == 0 {
-            return write!(f, "{}", self.value);
+            return write!(f, "{}", display_value);
         };
         if self.pow == 1 {
-            return write!(f, "{} * X", self.value);
+            return write!(f, "{} * X", display_value);
         };
-        write!(f, "{} * X^{}", self.value, self.pow)
-    }
-}
-
-impl clone::Clone for Operation {
-    fn clone(&self) -> Operation {
-        Operation {
-            negative: self.negative,
-            value: self.value,
-            pow: self.pow,
-        }
+        write!(f, "{} * X^{}", display_value, self.pow)
     }
 }
 
 pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
     let mut s = String::new();
     for (i, op) in vec.iter().enumerate() {
-        let sign = if op.negative {
+        let sign = if op.value < 0 {
             "-"
         } else if i > 0 {
             "+"
@@ -79,5 +62,9 @@ pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
         s.push_str(&formatted_operation);
         s.push(' ');
     }
-    s
+    if s.len() == 0 {
+        " 0 ".to_owned()
+    } else {
+        s
+    }
 }
