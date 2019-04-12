@@ -11,7 +11,7 @@ pub fn parse(s: String) -> Result<Equation, &'static str> {
     if operations[1].trim() != "0" {
         right_op = get_operation_vec(operations[1])?;
     } else {
-        right_op = vec![Operation::new(0, 0)];
+        right_op = vec![Operation::new(0.0, 0)];
     };
 
     Ok(Equation::new(left_op, right_op))
@@ -80,7 +80,7 @@ fn get_operation_from_iterator(iterator: Bytes) -> Option<OperationIterationResu
     let mut return_value = OperationIterationResult::new();
     for byte in iterator {
         match byte {
-            b'0'...b'9' | b'x' | b'^' | b'*' => {
+            b'0'...b'9' | b'.' | b'x' | b'^' | b'*' => {
                 return_value.value.push(byte as char);
             }
             b'-' | b'+' => {
@@ -110,7 +110,7 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
         return None;
     };
     let wrapped_num = splitted_by_mult.first()?.parse();
-    let value: i64;
+    let value: f32;
     if wrapped_num.is_err() {
         return None;
     } else {
@@ -128,14 +128,10 @@ fn get_operation_from_str(operation_as_str: &str, sign: Sign) -> Option<Operatio
     } else {
         pow = wrapped_pow.unwrap();
     };
-    if pow > 2 {
-        return None;
+    match sign {
+        Sign::Neg => Some(Operation::new(-value, pow)),
+        Sign::Pos => Some(Operation::new(value, pow)),
     }
-    let neg = match sign {
-        Sign::Neg => -1,
-        Sign::Pos => 1,
-    };
-    Some(Operation::new(value * neg, pow))
 }
 
 // -------------- TESTS ----------------- //

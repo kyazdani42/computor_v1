@@ -32,8 +32,8 @@ pub fn run(input: String) {
     };
     let simplified_operation = compute::simplify(equation);
     println!(
-        "Reduced form:{}= 0\n{}",
+        "Reduced form:{}= 0",
         equation::get_str_from_vec(&simplified_operation),
-        compute::resolve(&simplified_operation)
     );
+    println!("{}", compute::resolve(&simplified_operation));
 }

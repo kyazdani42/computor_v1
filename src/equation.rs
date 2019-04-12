@@ -21,20 +21,20 @@ impl fmt::Display for Equation {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Operation {
-    pub value: i64,
+    pub value: f32,
     pub pow: i16,
 }
 
 impl Operation {
-    pub fn new(value: i64, pow: i16) -> Operation {
+    pub fn new(value: f32, pow: i16) -> Operation {
         Operation { value, pow }
     }
 }
 
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let display_value = if self.value < 0 {
-            self.value * -1
+        let display_value = if self.value < 0.0 {
+            -self.value
         } else {
             self.value
         };
@@ -51,7 +51,7 @@ impl fmt::Display for Operation {
 pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
     let mut s = String::new();
     for (i, op) in vec.iter().enumerate() {
-        let sign = if op.value < 0 {
+        let sign = if op.value < 0.0 {
             "-"
         } else if i > 0 {
             "+"
