@@ -35,21 +35,27 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
             Lexer::OP(op) => {
                 match previous_token {
                     Lexer::OP(_) => return Err("Format error."),
+                    Lexer::HAT => { previous_token = Lexer::OP(*op); continue; },
                     _ => {}
                 };
                 if i == index_max { return Err("Format error.") }
                 if i != 0 {
+                    if pow == None {
+                        if previous_token == Lexer::UNK {
+                            pow = Some(1);
+                        } else if val != None {
+                            match previous_token {
+                                Lexer::NUM(v) => pow = Some(v as i16),
+                                _ => return Err("Format error.")
+                            }
+                        } else {
+                            pow = Some(0);
+                        }
+                    }
                     if val == None {
                         match previous_token {
                             Lexer::NUM(v) => val = Some(v),
                             _ => return Err("Format error.")
-                        }
-                    }
-                    if pow == None {
-                        if previous_token == Lexer::UNK {
-                            pow = Some(1);
-                        } else {
-                            pow = Some(0);
                         }
                     }
                     operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
@@ -68,11 +74,11 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     _ => return Err("lexer error, shouldn't get there"),
                 }
                 if i == index_max {
-                    if pow == None {
+                    if pow == None && val == None {
                         pow = Some(0);
-                    }
-                    if val == None && previous_token != Lexer::HAT {
                         val = Some(value);
+                    } else if pow == None {
+                        pow = Some(value as i16);
                     }
                     operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
                 }
