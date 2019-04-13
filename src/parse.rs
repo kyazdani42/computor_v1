@@ -1,15 +1,16 @@
 use equation::{Equation, Operation};
 
 pub fn parse(s: String) -> Result<Equation, &'static str> {
-    let operations = split_equal(&s)?;
+    let cleaned_str = retain_spaces(&s);
+    let operations = split_equal(&cleaned_str)?;
 
-    let left_op = parse_operations(retain_spaces(operations[0]))?;
-    let right_op = parse_operations(retain_spaces(operations[1]))?;
+    let left_op = parse_operations(operations[0].to_owned())?;
+    let right_op = parse_operations(operations[1].to_owned())?;
     Ok(Equation::new(left_op, right_op))
 }
 
 fn split_equal(s: &str) -> Result<Vec<&str>, &'static str> {
-    let operations: Vec<&str> = s.split('=').collect();
+    let operations: Vec<&str> = s.split('=').filter(| v | v.len() != 0).collect();
     match operations.len() {
         2 => Ok(operations),
         _ => Err("wrong format."),
@@ -24,20 +25,92 @@ fn retain_spaces(operation: &str) -> String {
 
 fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> {
     let lexed_operation: Vec<Lexer> = lex_operation(operations)?;
-    let mut operation_vec: Vec<Operation> = vec![Operation::new(0.0, 0)];
-    for token in lexed_operation.iter() {
-        println!("{:?}", token)
+    let index_max = lexed_operation.len() - 1;
+    let mut operation_vec: Vec<Operation> = vec![];
+    let mut val: Option<f32> = None;
+    let mut pow: Option<i16> = None;
+    let mut previous_token: Lexer = Lexer::NONE;
+    for (i, token) in lexed_operation.iter().enumerate() {
+        match token {
+            Lexer::OP(op) => {
+                match previous_token {
+                    Lexer::OP(_) => return Err("Format error."),
+                    _ => {}
+                };
+                if i == index_max { return Err("Format error.") }
+                if i != 0 {
+                    if val == None {
+                        match previous_token {
+                            Lexer::NUM(v) => val = Some(v),
+                            _ => return Err("Format error.")
+                        }
+                    }
+                    if pow == None {
+                        if previous_token == Lexer::UNK {
+                            pow = Some(1);
+                        } else {
+                            pow = Some(0);
+                        }
+                    }
+                    operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
+                    val = None;
+                    pow = None;
+                }
+                previous_token = Lexer::OP(*op)
+            },
+            Lexer::NUM(num) => {
+                let mut value = *num;
+                match previous_token {
+                    Lexer::NONE => val = Some(value),
+                    Lexer::UNK | Lexer::HAT => pow = Some(value as i16),
+                    Lexer::OP(sign) => if sign == '-' { value = -value; },
+                    Lexer::MULT => return Err("Format error."),
+                    _ => return Err("lexer error, shouldn't get there"),
+                }
+                if i == index_max {
+                    if pow == None {
+                        pow = Some(0);
+                    }
+                    if val == None && previous_token != Lexer::HAT {
+                        val = Some(value);
+                    }
+                    operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
+                }
+                previous_token = Lexer::NUM(value);
+            },
+            Lexer::UNK => {
+                if previous_token != Lexer::MULT { return Err("Format error."); }
+                previous_token = Lexer::UNK;
+                if i == index_max {
+                    operation_vec.push(Operation::new(val.unwrap(), 1));
+                }
+            },
+            Lexer::HAT => {
+                if i == index_max || previous_token != Lexer::UNK { return Err("Format error."); }
+                previous_token = Lexer::HAT;
+            },
+            Lexer::MULT => {
+                match previous_token {
+                    Lexer::NUM(num) => { val = Some(num); },
+                    _ => return Err("Format error.")
+                }
+                if i == index_max { return Err("Format error."); }
+                previous_token = Lexer::MULT;
+            },
+            _ => return Err("lexer error, shouldn't get there")
+        }
     }
     Ok(operation_vec)
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Lexer {
     NUM(f32),
     OP(char),
     UNK,
     HAT,
     MULT,
+    NONE,
 }
 
 fn lex_operation(operation: String) -> Result<Vec<Lexer>, &'static str> {
