@@ -34,7 +34,7 @@ fn get_operation_vec(operation: &str) -> Result<Vec<Operation>, &'static str> {
 
 fn retain_spaces(operation: &str) -> String {
     let mut cleaned_operation = String::from(operation).to_lowercase();
-    cleaned_operation.retain(|c| c != ' ');
+    cleaned_operation.retain(|c| c != ' ' && c != '\n');
     cleaned_operation
 }
 
@@ -196,7 +196,7 @@ mod tests {
     fn test_get_operation() {
         let test_value = "14*x^1";
         let result = get_operation_from_str(test_value, Sign::Pos).unwrap();
-        let expected = Operation::new(false, 14, 1);
+        let expected = Operation::new(14.0, 1);
         assert_eq!(result, expected)
     }
 
@@ -204,7 +204,7 @@ mod tests {
     fn test_get_operation_neg() {
         let test_value = "14*x^2";
         let result = get_operation_from_str(test_value, Sign::Neg).unwrap();
-        let expected = Operation::new(true, 14, 2);
+        let expected = Operation::new(-14.0, 2);
         assert_eq!(result, expected)
     }
 

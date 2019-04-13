@@ -29,15 +29,19 @@ impl Operation {
     pub fn new(value: f32, pow: i16) -> Operation {
         Operation { value, pow }
     }
+
+    pub fn abs(&self) -> f32 {
+        if self.value < 0.0 {
+            -self.value
+        } else {
+            self.value
+        }
+    }
 }
 
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let display_value = if self.value < 0.0 {
-            -self.value
-        } else {
-            self.value
-        };
+        let display_value = self.abs();
         if self.pow == 0 {
             return write!(f, "{}", display_value);
         };
