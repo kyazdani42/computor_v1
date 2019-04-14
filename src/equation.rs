@@ -22,11 +22,11 @@ impl fmt::Display for Equation {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Operation {
     pub value: f32,
-    pub pow: i16,
+    pub pow: f32,
 }
 
 impl Operation {
-    pub fn new(value: f32, pow: i16) -> Operation {
+    pub fn new(value: f32, pow: f32) -> Operation {
         Operation { value, pow }
     }
 
@@ -42,10 +42,10 @@ impl Operation {
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let display_value = self.abs();
-        if self.pow == 0 {
+        if self.pow == 0.0 {
             return write!(f, "{}", display_value);
         };
-        if self.pow == 1 {
+        if self.pow == 1.0 {
             return write!(f, "{} * X", display_value);
         };
         write!(f, "{} * X^{}", display_value, self.pow)
