@@ -10,7 +10,7 @@ pub fn parse(s: String) -> Result<Equation, &'static str> {
 }
 
 fn split_equal(s: &str) -> Result<Vec<&str>, &'static str> {
-    let operations: Vec<&str> = s.split('=').filter(| v | v.len() != 0).collect();
+    let operations: Vec<&str> = s.split('=').filter(|v| v.len() != 0).collect();
     match operations.len() {
         2 => Ok(operations),
         _ => Err("wrong format."),
@@ -28,10 +28,10 @@ fn find_token(lexed_operation: Vec<Lexer>, i: i16) -> Lexer {
         .iter()
         .clone()
         .enumerate()
-        .find(|( j, _ )| *j as i16 == i)
+        .find(|(j, _)| *j as i16 == i)
     {
         Some(v) => v.1.clone(),
-        None => Lexer::NONE
+        None => Lexer::NONE,
     }
 }
 
@@ -51,7 +51,9 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     Lexer::HAT => continue,
                     _ => {}
                 };
-                if i == index_max { return Err("Format error.") }
+                if i == index_max {
+                    return Err("Format error.");
+                }
                 if i != 0 {
                     if pow == None {
                         if previous_token == Lexer::X {
@@ -59,7 +61,7 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                         } else if val != None {
                             match previous_token {
                                 Lexer::NUM(v) => pow = Some(v as i16),
-                                _ => return Err("Format error.")
+                                _ => return Err("Format error."),
                             }
                         } else {
                             pow = Some(0);
@@ -68,20 +70,24 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     if val == None {
                         match previous_token {
                             Lexer::NUM(v) => val = Some(v),
-                            _ => return Err("Format error.")
+                            _ => return Err("Format error."),
                         }
                     }
                     operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
                     val = None;
                     pow = None;
                 }
-            },
+            }
             Lexer::NUM(num) => {
                 let mut value = *num;
                 match previous_token {
                     Lexer::NONE => val = Some(value),
                     Lexer::X | Lexer::HAT => pow = Some(value as i16),
-                    Lexer::SIGN(sign) => if sign == '-' { value = -value; },
+                    Lexer::SIGN(sign) => {
+                        if sign == '-' {
+                            value = -value;
+                        }
+                    }
                     Lexer::MULT => return Err("Format error."),
                     _ => return Err("lexer error, shouldn't get there"),
                 }
@@ -94,7 +100,7 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     }
                     operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
                 }
-            },
+            }
             Lexer::X => {
                 match previous_token {
                     Lexer::MULT => return Err("format error, previous token must be *. (x)"),
@@ -103,28 +109,28 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                 if i == index_max {
                     operation_vec.push(Operation::new(val.unwrap(), 1));
                 }
-            },
+            }
             Lexer::HAT => {
                 match previous_token {
-                    Lexer::X => {},
-                    _ => return Err("format error, previous token must be x. (mult)")
+                    Lexer::X => {}
+                    _ => return Err("format error, previous token must be x. (mult)"),
                 };
                 match next_token {
-                    Lexer::SIGN(_) | Lexer::NUM(_) => {},
-                    _ => return Err("format error, next token must be sign or number. (mult)")
+                    Lexer::SIGN(_) | Lexer::NUM(_) => {}
+                    _ => return Err("format error, next token must be sign or number. (mult)"),
                 };
-            },
+            }
             Lexer::MULT => {
                 match previous_token {
                     Lexer::NUM(num) => val = Some(num),
-                    _ => return Err("format error, previous token must be number. (mult)")
+                    _ => return Err("format error, previous token must be number. (mult)"),
                 }
                 match next_token {
-                    Lexer::X => {},
-                    _ => return Err("format error, next token must be x. (mult)")
+                    Lexer::X => {}
+                    _ => return Err("format error, next token must be x. (mult)"),
                 }
-            },
-            _ => return Err("lexer error, shouldn't get there")
+            }
+            _ => return Err("lexer error, shouldn't get there"),
         }
     }
     println!("{:?}", operation_vec);
@@ -147,7 +153,9 @@ fn lex_operation(operation: String) -> Result<Vec<Lexer>, &'static str> {
     let mut prev_str = String::new();
     for byte in iterator {
         let byte_is_not_num = !is_byte_numeral(byte);
-        if byte_is_not_num && prev_str.len() != 0 { handle_number_lexing(&mut lexer, &mut prev_str)?; }
+        if byte_is_not_num && prev_str.len() != 0 {
+            handle_number_lexing(&mut lexer, &mut prev_str)?;
+        }
         match byte {
             b'x' => lexer.push(Lexer::X),
             b'^' => lexer.push(Lexer::HAT),
@@ -158,7 +166,9 @@ fn lex_operation(operation: String) -> Result<Vec<Lexer>, &'static str> {
         };
     }
     let must_parse_last_element = prev_str.len() != 0;
-    if must_parse_last_element { handle_number_lexing(&mut lexer, &mut prev_str)?; };
+    if must_parse_last_element {
+        handle_number_lexing(&mut lexer, &mut prev_str)?;
+    };
     Ok(lexer)
 }
 
@@ -172,13 +182,13 @@ fn handle_number_lexing(lexer: &mut Vec<Lexer>, value: &mut String) -> Result<()
 fn is_byte_numeral(byte: u8) -> bool {
     match byte {
         b'0'...b'9' | b'.' => true,
-        _ => false
+        _ => false,
     }
 }
 
 fn handle_float_parse_error(value: &str) -> Result<f32, &'static str> {
     match value.parse() {
         Ok(v) => Ok(v),
-        Err(_) => Err("cannot parse number")
+        Err(_) => Err("cannot parse number"),
     }
 }
