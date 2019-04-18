@@ -28,11 +28,8 @@ fn find_token(lexed_operation: Vec<Lexer>, i: i16) -> Lexer {
     }
 }
 
-// TODO: rewrite Lexer::SIGN match and Lexer::NUM match
-// finish writing Lexer::X match
 fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> {
     let lexed_operation: Vec<Lexer> = lex_operation(operations)?;
-    let index_max = lexed_operation.len() - 1;
     let mut operation_vec: Vec<Operation> = vec![];
     let mut val: Option<f32> = None;
     let mut pow: Option<f32> = None;
@@ -42,58 +39,39 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
         match token {
             Lexer::SIGN(_) => {
                 match previous_token {
-                    Lexer::SIGN(_) => return Err("Format error."),
-                    Lexer::HAT => continue,
+                    Lexer::SIGN(_) => return Err("format error. (sign)"),
                     _ => {}
                 };
-                if i == index_max {
-                    return Err("Format error.");
-                }
-                if i != 0 {
-                    if pow == None {
-                        if previous_token == Lexer::X {
-                            pow = Some(1.0);
-                        } else if val != None {
-                            match previous_token {
-                                Lexer::NUM(v) => pow = Some(v),
-                                _ => return Err("Format error."),
-                            }
-                        } else {
-                            pow = Some(0.0);
-                        }
-                    }
-                    if val == None {
-                        match previous_token {
-                            Lexer::NUM(v) => val = Some(v),
-                            _ => return Err("Format error."),
-                        }
-                    }
-                    operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
-                    val = None;
-                    pow = None;
-                }
+                match next_token {
+                    Lexer::NUM(_) => {},
+                    _ => return Err("format error. (sign)"),
+                };
             }
             Lexer::NUM(num) => {
                 let mut value = *num;
+                let mut is_pow = false;
+                // let previous_previous_token = find_token(lexed_operation.clone(), i as i16 - 2);
+                // match previous_previous_token {
+                //     Lexer::HAT => is_pow = true,
+                //     _ => {}
+                // };
                 match previous_token {
-                    Lexer::NONE => val = Some(value),
-                    Lexer::X | Lexer::HAT => pow = Some(value),
                     Lexer::SIGN(sign) => {
-                        if sign == '-' {
-                            value = -value;
-                        }
-                    }
-                    Lexer::MULT => return Err("Format error."),
-                    _ => return Err("lexer error, shouldn't get there"),
-                }
-                if i == index_max {
-                    if pow == None && val == None {
-                        pow = Some(0.0);
-                        val = Some(value);
-                    } else if pow == None {
-                        pow = Some(value);
-                    }
-                    operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
+                        if sign == '-' { value = -value };
+                        // if is_pow { pow = Some(value)};
+                        // match next_token {
+                        //     Lexer::SIGN(_) => { val = Some(value); pow = Some(0.0) },
+                        //     _ => {}
+                        // }
+                    },
+                    Lexer::NONE => val = Some(value),
+                    Lexer::HAT => pow = Some(value),
+                    _ => return Err("format error. (num)"),
+                };
+                match next_token {
+                    Lexer::SIGN(_) => {},
+                    Lexer::X => return Err("format error. (num)"),
+                    Lexer::NONE => {}
                 }
             }
             Lexer::X => {
@@ -102,8 +80,8 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     _ => return Err("format error, previous token must be *. (x)"),
                 };
                 match next_token {
-                    Lexer::NONE => operation_vec.push(Operation::new(val.unwrap(), 1.0)),
-                    Lexer::NUM(num) => operation_vec.push(Operation::new(val.unwrap(), num)),
+                    Lexer::NONE => pow = Some(1.0),
+                    Lexer::NUM(num) => pow = Some(num),
                     Lexer::HAT | Lexer::SIGN(_) => {}
                     _ => return Err("format error, next token mut be none or ^ or num. (x)"),
                 };
@@ -129,6 +107,11 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                 }
             }
             _ => return Err("lexer error, shouldn't get there"),
+        }
+        if val.is_some() && pow.is_some() {
+            operation_vec.push(Operation::new(val.unwrap(), pow.unwrap()));
+            val = None;
+            pow = None;
         }
     }
     println!("{:?}", operation_vec);
