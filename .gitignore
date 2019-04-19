@@ -1,3 +1,4 @@
 computor_v1
 /target
 **/*.rs.bk
+.vscode
