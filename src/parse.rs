@@ -42,7 +42,7 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                         operation_vec.push(op);
                     }
                     Token::SIGN(sign) => {
-                        if i as i16 - 2 == last_parsed_index {
+                        if i as i16 - 1 == last_parsed_index {
                             if sign == '-' {
                                 *num = -*num;
                             }
