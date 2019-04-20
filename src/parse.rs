@@ -12,7 +12,7 @@ fn split_equal(s: &str) -> Result<Vec<&str>, &'static str> {
     let operations: Vec<&str> = s.split('=').filter(|v| v.len() != 0).collect();
     match operations.len() {
         2 => Ok(operations),
-        _ => Err("wrong format."),
+        _ => Err("Format error."),
     }
 }
 
@@ -43,21 +43,21 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                         value = Some(*num);
                     }
                 },
-                _ => return Err("Format error, there shouldn't be a ^ after a number"),
+                _ => return Err("Format error."),
             },
             Token::HAT => match next_token {
                 Token::NUM(_) => continue,
-                _ => return Err("Format error on ^, next token must be -/+ or a number"),
+                _ => return Err("Format error.");
             },
             Token::MULT => if next_token != Token::X {
-                return Err("Format error on *, next token must be *")
+                return Err("Format error.")
             },
             Token::X => match next_token {
                 Token::NONE | Token::NUM(_) => pow = Some(1.0),
                 Token::HAT => {},
-                _ => return Err("Format error on x")
+                _ => return Err("Format error.")
             },
-            _ => return Err("lexer error, shouldn't get there"),
+            _ => return Err("Format error."),
         }
         if pow.is_some() && value.is_some() {
             operation_vec.push(Operation::new(value.unwrap(), pow.unwrap()));
@@ -100,7 +100,7 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
             b'^' => lexer.push(Token::HAT),
             b'*' => lexer.push(Token::MULT),
             b'0'...b'9' | b'.' | b'-' | b'+' => prev_str.push(byte as char),
-            _ => return Err("Found wrong character."),
+            _ => return Err("Format error."),
         };
     }
     let must_parse_last_element = prev_str.len() != 0;
@@ -131,9 +131,8 @@ fn is_byte_num(byte: u8) -> bool {
 }
 
 fn handle_float_parse_error(value: &str) -> Result<f32, &'static str> {
-    println!("{}", value);
     match value.parse() {
         Ok(v) => Ok(v),
-        Err(_) => Err("cannot parse number"),
+        Err(_) => Err("Format error."),
     }
 }
