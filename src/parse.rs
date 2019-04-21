@@ -95,9 +95,9 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
     let mut lexer: Vec<Token> = vec![];
     let iterator = operation.bytes();
     let mut prev_str = String::new();
-    for byte in iterator {
+    for (i, byte) in iterator.enumerate() {
         let should_be_tokenized = !is_byte_num(byte) || is_byte_sign(byte);
-        if (prev_str == "-" || prev_str == "+") && byte == b'X' || byte == b'x' {
+        if (prev_str == "-" || prev_str == "+" || i == 0) && (byte == b'X' || byte == b'x') {
             if prev_str == "-" {
                 lexer.push(Token::NUM(-1.0));
                 lexer.push(Token::MULT);
