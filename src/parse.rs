@@ -47,13 +47,18 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
             },
             Token::HAT => match next_token {
                 Token::NUM(_) => continue,
-                _ => return Err("Format error.");
+                _ => return Err("Format error.")
             },
             Token::MULT => if next_token != Token::X {
                 return Err("Format error.")
             },
             Token::X => match next_token {
-                Token::NONE | Token::NUM(_) => pow = Some(1.0),
+                Token::NONE | Token::NUM(_) => {
+                    if !value.is_some() {
+                        value = Some(1.0);
+                    }
+                    pow = Some(1.0);
+                }
                 Token::HAT => {},
                 _ => return Err("Format error.")
             },

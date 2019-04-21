@@ -39,13 +39,23 @@ pub fn resolve(operation: &Vec<Operation>) -> String {
     let higher_polynomial = operation
         .iter()
         .fold(0.0, |a, b| if a > b.pow { a } else { b.pow });
-    println!("Polynomial degree: {}", higher_polynomial);
-    if higher_polynomial > 2.0 {
-        return "The polynomial degree is stricly greater than 2, I can't solve.".to_owned();
+    let smaller_polynomial = operation
+        .iter()
+        .fold(0.0, |a, b| if a < b.pow { a } else { b.pow });
+    if smaller_polynomial < 0.0 {
+        return "Cannot compute negative coefficient".to_owned();
     }
     let pow2 = get_operation_value_from_pow(&operation, 2.0);
     let pow1 = get_operation_value_from_pow(&operation, 1.0);
     let constant = get_operation_value_from_pow(&operation, 0.0);
+    if pow2 == 0.0 && pow1 == 0.0 && constant != 0.0 {
+        return "The Equation is invalid".to_owned();
+    }
+
+    println!("Polynomial degree: {}", higher_polynomial);
+    if higher_polynomial > 2.0 {
+        return "The polynomial degree is stricly greater than 2, I can't solve.".to_owned();
+    }
     if pow2 == 0.0 {
         linear_operation(pow1, constant)
     } else {
