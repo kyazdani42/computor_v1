@@ -59,7 +59,7 @@ pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
             " -"
         } else if op.value < 0.0 {
             "- "
-        }else if i > 0 {
+        } else if i > 0 {
             "+ "
         } else {
             " "

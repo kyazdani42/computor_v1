@@ -34,7 +34,7 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     } else {
                         value = Some(*num);
                     }
-                },
+                }
                 Token::NONE | Token::NUM(_) => {
                     if value.is_some() {
                         pow = Some(*num);
@@ -42,16 +42,18 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                         pow = Some(0.0);
                         value = Some(*num);
                     }
-                },
+                }
                 _ => return Err("Format error."),
             },
             Token::HAT => match next_token {
                 Token::NUM(_) => continue,
-                _ => return Err("Format error.")
+                _ => return Err("Format error."),
             },
-            Token::MULT => if next_token != Token::X {
-                return Err("Format error.")
-            },
+            Token::MULT => {
+                if next_token != Token::X {
+                    return Err("Format error.");
+                }
+            }
             Token::X => match next_token {
                 Token::NONE | Token::NUM(_) => {
                     if !value.is_some() {
@@ -59,8 +61,8 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     }
                     pow = Some(1.0);
                 }
-                Token::HAT => {},
-                _ => return Err("Format error.")
+                Token::HAT => {}
+                _ => return Err("Format error."),
             },
             _ => return Err("Format error."),
         }
@@ -91,7 +93,7 @@ enum Token {
 }
 
 fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
-    operation.retain(| v | v != ' ' && v != '\n');
+    operation.retain(|v| v != ' ' && v != '\n');
     let mut lexer: Vec<Token> = vec![];
     let iterator = operation.bytes();
     let mut prev_str = String::new();
