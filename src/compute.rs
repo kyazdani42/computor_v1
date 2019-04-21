@@ -49,7 +49,7 @@ pub fn resolve(operation: &Vec<Operation>) -> String {
     let pow1 = get_operation_value_from_pow(&operation, 1.0);
     let constant = get_operation_value_from_pow(&operation, 0.0);
     if pow2 == 0.0 && pow1 == 0.0 && constant != 0.0 {
-        return "The Equation is invalid".to_owned();
+        return "The equation is invalid".to_owned();
     }
 
     println!("Polynomial degree: {}", higher_polynomial);

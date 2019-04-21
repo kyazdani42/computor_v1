@@ -55,14 +55,16 @@ impl fmt::Display for Operation {
 pub fn get_str_from_vec(vec: &Vec<Operation>) -> String {
     let mut s = String::new();
     for (i, op) in vec.iter().enumerate() {
-        let sign = if op.value < 0.0 {
-            "-"
-        } else if i > 0 {
-            "+"
+        let sign = if op.value < 0.0 && i == 0 {
+            " -"
+        } else if op.value < 0.0 {
+            "- "
+        }else if i > 0 {
+            "+ "
         } else {
-            ""
+            " "
         };
-        let formatted_operation = format!("{} {}", sign, op);
+        let formatted_operation = format!("{}{}", sign, op);
         s.push_str(&formatted_operation);
         s.push(' ');
     }
