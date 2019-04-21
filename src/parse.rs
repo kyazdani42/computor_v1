@@ -83,6 +83,8 @@ fn get_token_from_vec(tokens: &Vec<Token>, i: i16) -> Token {
     }
 }
 
+// ------------------- LEXING ---------------------------- //
+
 #[derive(PartialEq, Clone, Copy)]
 enum Token {
     NUM(f32),
@@ -99,18 +101,13 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
     let mut prev_str = String::new();
     for (i, byte) in iterator.enumerate() {
         let should_be_tokenized = !is_byte_num(byte) || is_byte_sign(byte);
-        if (prev_str == "-" || prev_str == "+" || i == 0) && (byte == b'X' || byte == b'x') {
-            if prev_str == "-" {
-                lexer.push(Token::NUM(-1.0));
-                lexer.push(Token::MULT);
-            } else {
-                lexer.push(Token::NUM(1.0));
-                lexer.push(Token::MULT);
-            }
-            prev_str = String::new();
+
+        if byte_is_x(byte) && (is_str_sign(&prev_str) || i == 0) {
+            prev_str = add_1_mult_before_x(&prev_str, &mut lexer);
         } else if should_be_tokenized && prev_str.len() != 0 {
             prev_str = handle_number_lexing(&mut lexer, &prev_str)?;
         }
+
         match byte {
             b'x' | b'X' => lexer.push(Token::X),
             b'^' => lexer.push(Token::HAT),
@@ -126,17 +123,16 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
     Ok(lexer)
 }
 
-fn handle_number_lexing(lexer: &mut Vec<Token>, value: &String) -> Result<String, &'static str> {
-    let parsed_number: f32 = handle_float_parse_error(&value)?;
-    lexer.push(Token::NUM(parsed_number));
-    Ok(String::new())
+fn is_byte_sign(byte: u8) -> bool {
+    byte == b'+' || byte == b'-'
 }
 
-fn is_byte_sign(byte: u8) -> bool {
-    match byte {
-        b'+' | b'-' => true,
-        _ => false,
-    }
+fn byte_is_x(byte: u8) -> bool {
+    byte == b'X' || byte == b'x'
+}
+
+fn is_str_sign(num_as_str: &str) -> bool {
+    num_as_str == "+" || num_as_str == "-"
 }
 
 fn is_byte_num(byte: u8) -> bool {
@@ -151,4 +147,21 @@ fn handle_float_parse_error(value: &str) -> Result<f32, &'static str> {
         Ok(v) => Ok(v),
         Err(_) => Err("Format error."),
     }
+}
+
+fn handle_number_lexing(lexer: &mut Vec<Token>, value: &String) -> Result<String, &'static str> {
+    let parsed_number: f32 = handle_float_parse_error(&value)?;
+    lexer.push(Token::NUM(parsed_number));
+    Ok(String::new())
+}
+
+fn add_1_mult_before_x(prev_str: &str, lexer: &mut Vec<Token>) -> String {
+    if prev_str == "-" {
+        lexer.push(Token::NUM(-1.0));
+        lexer.push(Token::MULT);
+    } else {
+        lexer.push(Token::NUM(1.0));
+        lexer.push(Token::MULT);
+    };
+    String::new()
 }
