@@ -12,7 +12,7 @@ fn split_equal(s: &str) -> Result<Vec<&str>, &'static str> {
     let operations: Vec<&str> = s.split('=').filter(|v| v.len() != 0).collect();
     match operations.len() {
         2 => Ok(operations),
-        _ => Err("Format error."),
+        _ => Err("Format error, missing some parts of the equation."),
     }
 }
 
@@ -30,7 +30,7 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
             Token::NUM(num) => match next_token {
                 Token::MULT => {
                     if pow.is_some() {
-                        return Err("Format error.");
+                        return Err("Format error, * cannot be placed here.");
                     }
                     if value.is_some() {
                         pow = Some(*num);
@@ -46,15 +46,15 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                         value = Some(*num);
                     }
                 }
-                _ => return Err("Format error."),
+                _ => return Err("Format error, number must be followed either by nothing, a * or a sign."),
             },
             Token::HAT => match next_token {
                 Token::NUM(_) => continue,
-                _ => return Err("Format error."),
+                _ => return Err("Format error, ^ must be followed by number."),
             },
             Token::MULT => {
                 if next_token != Token::X {
-                    return Err("Format error.");
+                    return Err("Format error, * must be followed by X.");
                 }
             }
             Token::X => match next_token {
@@ -65,9 +65,9 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
                     pow = Some(1.0);
                 }
                 Token::HAT => {}
-                _ => return Err("Format error."),
+                _ => return Err("Format error, X can be followed either by ^, a number or nothing."),
             },
-            _ => return Err("Format error."),
+            _ => return Err("Program error, shouldn't get there."),
         }
         if pow.is_some() && value.is_some() {
             operation_vec.push(Operation::new(value.unwrap(), pow.unwrap()));
@@ -97,26 +97,35 @@ enum Token {
     NONE,
 }
 
-fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
-    operation.retain(| v | v != ' ' && v != '\n'); 
+fn lex_operation(operation: String) -> Result<Vec<Token>, &'static str> {
     let mut lexer: Vec<Token> = vec![];
     let mut prev_str = String::new();
 
-    let iterator = operation.bytes();
     let byte_vector: Vec<u8> = operation.bytes().collect();
-    for (i, byte) in iterator.enumerate() {
-        let should_be_tokenized = !is_byte_num(byte) || is_byte_sign(byte);
+    let mut i = 0;
+    for byte in &byte_vector {
+        if *byte == b'\n' || *byte == b' ' {
+            if prev_str.len() != 0 && i != byte_vector.len() - 1 && is_byte_num(&byte_vector[i + 1]) {
+                return Err("Format error, numbers can't be separated by a space.");
+            }
+            i += 1;
+            continue;
+        }
+
         if byte_is_x(byte) {
-            if i != byte_vector.len() - 1 {
-                let next_char = byte_vector[i + 1];
-                if next_char != b'+' && next_char != b'-' && next_char != b'^' {
-                    return Err("Format error.")
+            if i < byte_vector.len() - 1 {
+                let new_iterator = &byte_vector[i + 1..];
+                let next_char = new_iterator.iter().find(| v | **v != b' ' && **v != b'\n');
+                if next_char.is_none() || *next_char.unwrap() != b'+' && *next_char.unwrap() != b'-' && *next_char.unwrap() != b'^' {
+                    return Err("Format error, X must be followed by a sign, a ^, or nothing.")
                 }
             }
             if is_str_sign(&prev_str) || i == 0 {
-                prev_str = add_1_mult_before_x(&prev_str, &mut lexer);
+                prev_str = add_1_mult_before_x(&mut lexer, &prev_str);
             }
         }
+
+        let should_be_tokenized = !is_byte_num(byte);
         if should_be_tokenized && prev_str.len() != 0 {
             prev_str = handle_number_lexing(&mut lexer, &prev_str)?;
         }
@@ -125,9 +134,10 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
             b'x' | b'X' => lexer.push(Token::X),
             b'^' => lexer.push(Token::HAT),
             b'*' => lexer.push(Token::MULT),
-            b'0'...b'9' | b'.' | b'-' | b'+' => prev_str.push(byte as char),
-            _ => return Err("Format error."),
+            b'0'...b'9' | b'.' | b'-' | b'+' => prev_str.push(*byte as char),
+            _ => return Err("Format error, found wrong character."),
         };
+        i += 1;
     }
     let must_parse_last_element = prev_str.len() != 0;
     if must_parse_last_element {
@@ -136,21 +146,17 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
     Ok(lexer)
 }
 
-fn is_byte_sign(byte: u8) -> bool {
-    byte == b'+' || byte == b'-'
-}
-
-fn byte_is_x(byte: u8) -> bool {
-    byte == b'X' || byte == b'x'
+fn byte_is_x(byte: &u8) -> bool {
+    *byte == b'X' || *byte == b'x'
 }
 
 fn is_str_sign(num_as_str: &str) -> bool {
     num_as_str == "+" || num_as_str == "-"
 }
 
-fn is_byte_num(byte: u8) -> bool {
+fn is_byte_num(byte: &u8) -> bool {
     match byte {
-        b'0'...b'9' | b'.' | b'+' | b'-' => true,
+        b'0'...b'9' | b'.' => true,
         _ => false,
     }
 }
@@ -158,7 +164,7 @@ fn is_byte_num(byte: u8) -> bool {
 fn handle_float_parse_error(value: &str) -> Result<f32, &'static str> {
     match value.parse() {
         Ok(v) => Ok(v),
-        Err(_) => Err("Format error."),
+        Err(_) => Err("Format error, cannot parse number."),
     }
 }
 
@@ -168,7 +174,7 @@ fn handle_number_lexing(lexer: &mut Vec<Token>, value: &String) -> Result<String
     Ok(String::new())
 }
 
-fn add_1_mult_before_x(prev_str: &str, lexer: &mut Vec<Token>) -> String {
+fn add_1_mult_before_x(lexer: &mut Vec<Token>, prev_str: &str) -> String {
     if prev_str == "-" {
         lexer.push(Token::NUM(-1.0));
         lexer.push(Token::MULT);
