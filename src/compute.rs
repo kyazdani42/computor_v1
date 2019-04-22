@@ -12,7 +12,9 @@ pub fn simplify(operation: Equation) -> Vec<Operation> {
     let mut operation = operation.l_op.clone();
     operation.append(&mut reversed_r_op);
     let filtered_op = operation.into_iter().filter(|v| v.value != 0.0).collect();
-    get_simplified_operation(filtered_op)
+    let mut simplified_operation = get_simplified_operation(filtered_op);
+    simplified_operation.sort_by(| a, b | b.pow.partial_cmp(&a.pow).unwrap());
+    simplified_operation
 }
 
 fn get_simplified_operation(operation: Vec<Operation>) -> Vec<Operation> {
@@ -86,7 +88,7 @@ pub fn linear_operation(pow1: f32, constant: f32) -> String {
     if pow1_null && constant_null {
         "Every value is a solution to the equation".to_owned()
     } else if constant_null {
-        format!("The solution is {}", -pow1)
+        format!("The solution is 0")
     } else {
         format!(
             "The solution is
@@ -128,7 +130,7 @@ pub fn quadratic_operation(a: f32, b: f32, c: f32) -> String {
             first_root, second_root
         )
     } else {
-        format!("{} = x", -(b / 2.0 * a))
+        format!("The solution is {}", -(b / 2.0 * a))
     }
 }
 

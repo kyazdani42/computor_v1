@@ -98,7 +98,7 @@ enum Token {
 }
 
 fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
-    operation.retain(|v| v != ' ' && v != '\n');
+    operation.retain(| v | v != ' ' && v != '\n'); 
     let mut lexer: Vec<Token> = vec![];
     let mut prev_str = String::new();
 
@@ -116,7 +116,8 @@ fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
             if is_str_sign(&prev_str) || i == 0 {
                 prev_str = add_1_mult_before_x(&prev_str, &mut lexer);
             }
-        } else if should_be_tokenized && prev_str.len() != 0 {
+        }
+        if should_be_tokenized && prev_str.len() != 0 {
             prev_str = handle_number_lexing(&mut lexer, &prev_str)?;
         }
 
