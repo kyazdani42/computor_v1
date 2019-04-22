@@ -29,6 +29,9 @@ fn parse_operations(operations: String) -> Result<Vec<Operation>, &'static str> 
         match token {
             Token::NUM(num) => match next_token {
                 Token::MULT => {
+                    if pow.is_some() {
+                        return Err("Format error.");
+                    }
                     if value.is_some() {
                         pow = Some(*num);
                     } else {
@@ -97,13 +100,22 @@ enum Token {
 fn lex_operation(mut operation: String) -> Result<Vec<Token>, &'static str> {
     operation.retain(|v| v != ' ' && v != '\n');
     let mut lexer: Vec<Token> = vec![];
-    let iterator = operation.bytes();
     let mut prev_str = String::new();
+
+    let iterator = operation.bytes();
+    let byte_vector: Vec<u8> = operation.bytes().collect();
     for (i, byte) in iterator.enumerate() {
         let should_be_tokenized = !is_byte_num(byte) || is_byte_sign(byte);
-
-        if byte_is_x(byte) && (is_str_sign(&prev_str) || i == 0) {
-            prev_str = add_1_mult_before_x(&prev_str, &mut lexer);
+        if byte_is_x(byte) {
+            if i != byte_vector.len() - 1 {
+                let next_char = byte_vector[i + 1];
+                if next_char != b'+' && next_char != b'-' && next_char != b'^' {
+                    return Err("Format error.")
+                }
+            }
+            if is_str_sign(&prev_str) || i == 0 {
+                prev_str = add_1_mult_before_x(&prev_str, &mut lexer);
+            }
         } else if should_be_tokenized && prev_str.len() != 0 {
             prev_str = handle_number_lexing(&mut lexer, &prev_str)?;
         }
