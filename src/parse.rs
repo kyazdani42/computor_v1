@@ -105,7 +105,7 @@ fn lex_operation(operation: String) -> Result<Vec<Token>, &'static str> {
     let mut i = 0;
     for byte in &byte_vector {
         if *byte == b'\n' || *byte == b' ' {
-            if prev_str.len() != 0 && i != byte_vector.len() - 1 && is_byte_num(&byte_vector[i + 1]) {
+            if prev_str.len() != 0 && i != byte_vector.len() - 1 && is_byte_num(&byte_vector[i + 1]) && prev_str != "-" && prev_str != "+" {
                 return Err("Format error, numbers can't be separated by a space.");
             }
             i += 1;
@@ -116,7 +116,7 @@ fn lex_operation(operation: String) -> Result<Vec<Token>, &'static str> {
             if i < byte_vector.len() - 1 {
                 let new_iterator = &byte_vector[i + 1..];
                 let next_char = new_iterator.iter().find(| v | **v != b' ' && **v != b'\n');
-                if next_char.is_none() || *next_char.unwrap() != b'+' && *next_char.unwrap() != b'-' && *next_char.unwrap() != b'^' {
+                if next_char.is_some() && *next_char.unwrap() != b'+' && *next_char.unwrap() != b'-' && *next_char.unwrap() != b'^' {
                     return Err("Format error, X must be followed by a sign, a ^, or nothing.")
                 }
             }
